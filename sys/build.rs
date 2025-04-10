@@ -124,10 +124,16 @@ fn main() {
         #[cfg(feature = "metal")]
         let bindings = bindings.header("whisper.cpp/ggml/include/ggml-metal.h");
 
-        let bindings = bindings
+        let mut bindings = bindings
             .clang_arg("-I./whisper.cpp/")
             .clang_arg("-I./whisper.cpp/include")
-            .clang_arg("-I./whisper.cpp/ggml/include")
+            .clang_arg("-I./whisper.cpp/ggml/include");
+
+        if cfg!(all(target_os = "macos", target_arch = "aarch64")) {
+            bindings = bindings.clang_arg("--target=arm64-apple-macosx");
+        }
+
+        let bindings = bindings
             .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
             .generate();
 
